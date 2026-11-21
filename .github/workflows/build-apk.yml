@@ -1,0 +1,37 @@
+name: Compilar FreeMyTV APK
+
+on:
+  push:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Instalar Android Build Tools
+        run: |
+          yes | sdkmanager --install "build-tools;34.0.0" "platforms;android-34"
+
+      - name: Compilar o APK
+        run: |
+          chmod +x build.sh
+          # Executa uma vez para gerar config.properties se não existir
+          ./build.sh || true
+          # Compila o APK final
+          ./build.sh
+
+      - name: Disponibilizar APK para Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: FreeMyTV-APK
+          path: FreeMyTV.apk
